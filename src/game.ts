@@ -57,23 +57,18 @@ class Game {
                 }
             }
         }
-        let numBullets = 0;
-
-        for(let bullet of this.bullets){
-            bullet.update();
-            if(bullet.isActive()){
-                numBullets ++;
-            }
+        for(let b of this.bullets){
+            b.update();
         }
         //console.log(this.clickable, numBullets);
-        if(!this.clickable && numBullets == 0 && numLanded == 0){
+        if(!this.clickable && this.bullets.length == 0 && numLanded == 0){
             if(this.comboFlag > 15){
                 this.shiftBlocks();
                 this.clickable = true;
                 this.bullets = [];
                 this.comboFlag = 0;
-                this.points += 5 + 10 * this.comboChain;
-                this.energy += 5 * this.comboChain;
+                this.points += 5 + 25 * this.comboChain;
+                this.energy += 10 * this.comboChain;
                 if(this.energy > 200){
                     this.energy = 200;
                 }
@@ -83,8 +78,18 @@ class Game {
                 this.comboFlag ++;
             }
         }
-
-        this.energybar.style.width = this.energy + "px";
+        if(this.energy < 0){
+            this.energybar.style.width = "0px";
+        }
+        else{
+            this.energybar.style.width = this.energy + "px";
+            if(this.energy < 40){
+                this.energybar.style.backgroundColor = "red";
+            }
+            else{
+                this.energybar.style.backgroundColor = "white";
+            }
+        }
         this.scorebar.innerHTML = this.points.toString();
 
         requestAnimationFrame(() => this.update());
@@ -96,9 +101,6 @@ class Game {
 
     public useEnergy(){
         this.energy -= 20;
-        if(this.energy < 0){
-            this.energy = 0;
-        }
     }
 
     public combo(){
@@ -107,6 +109,11 @@ class Game {
 
     public addBullets(b:Bullet){
         this.bullets.push(b);
+    }
+
+    public removeBullet(b:Bullet){
+        let i = this.bullets.indexOf(b);
+        this.bullets.splice(i, 1);
     }
 
     public getBlock(x:number, y:number): Block{

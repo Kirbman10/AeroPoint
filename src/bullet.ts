@@ -27,8 +27,7 @@ class Bullet{
 
         this._div = document.createElement("bullet");
         document.body.appendChild(this._div);
-        this._div.style.transform = "rotate(" + this.direction * 90 + "deg)";
-        this._div.style.transform = "translate("+this.x+"px, "+this.y+"px)";
+        this._div.style.transform = "translate("+this.x+"px, "+this.y+"px) rotate(" + this.direction * 90 + "deg)";
     }
 
     public update(){
@@ -37,12 +36,13 @@ class Bullet{
             if (this.distance < 80){
                 this.x += this.xSpeed;
                 this.y += this.ySpeed;
-                this._div.style.transform = "translate("+this.x+"px, "+this.y+"px)";
+                this._div.style.transform = "translate("+this.x+"px, "+this.y+"px) rotate(" + this.direction * 90 + "deg)";
             }
             else{
                 this.block.receive(this.direction);
                 this._div.remove();
                 this.active = false;
+                this.game.removeBullet(this);
             }
         }
     }

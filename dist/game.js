@@ -62,22 +62,18 @@ var Game = (function () {
                 }
             }
         }
-        var numBullets = 0;
         for (var _i = 0, _a = this.bullets; _i < _a.length; _i++) {
-            var bullet = _a[_i];
-            bullet.update();
-            if (bullet.isActive()) {
-                numBullets++;
-            }
+            var b = _a[_i];
+            b.update();
         }
-        if (!this.clickable && numBullets == 0 && numLanded == 0) {
+        if (!this.clickable && this.bullets.length == 0 && numLanded == 0) {
             if (this.comboFlag > 15) {
                 this.shiftBlocks();
                 this.clickable = true;
                 this.bullets = [];
                 this.comboFlag = 0;
-                this.points += 5 + 10 * this.comboChain;
-                this.energy += 5 * this.comboChain;
+                this.points += 5 + 25 * this.comboChain;
+                this.energy += 10 * this.comboChain;
                 if (this.energy > 200) {
                     this.energy = 200;
                 }
@@ -87,7 +83,18 @@ var Game = (function () {
                 this.comboFlag++;
             }
         }
-        this.energybar.style.width = this.energy + "px";
+        if (this.energy < 0) {
+            this.energybar.style.width = "0px";
+        }
+        else {
+            this.energybar.style.width = this.energy + "px";
+            if (this.energy < 40) {
+                this.energybar.style.backgroundColor = "red";
+            }
+            else {
+                this.energybar.style.backgroundColor = "white";
+            }
+        }
         this.scorebar.innerHTML = this.points.toString();
         requestAnimationFrame(function () { return _this.update(); });
     };
@@ -96,15 +103,16 @@ var Game = (function () {
     };
     Game.prototype.useEnergy = function () {
         this.energy -= 20;
-        if (this.energy < 0) {
-            this.energy = 0;
-        }
     };
     Game.prototype.combo = function () {
         this.comboChain++;
     };
     Game.prototype.addBullets = function (b) {
         this.bullets.push(b);
+    };
+    Game.prototype.removeBullet = function (b) {
+        var i = this.bullets.indexOf(b);
+        this.bullets.splice(i, 1);
     };
     Game.prototype.getBlock = function (x, y) {
         return this.blocks[x][y];
@@ -338,8 +346,7 @@ var Bullet = (function () {
         this.xSpeed = xSpeed;
         this._div = document.createElement("bullet");
         document.body.appendChild(this._div);
-        this._div.style.transform = "rotate(" + this.direction * 90 + "deg)";
-        this._div.style.transform = "translate(" + this.x + "px, " + this.y + "px)";
+        this._div.style.transform = "translate(" + this.x + "px, " + this.y + "px) rotate(" + this.direction * 90 + "deg)";
     }
     Bullet.prototype.isActive = function () {
         return this.active;
@@ -350,12 +357,13 @@ var Bullet = (function () {
             if (this.distance < 80) {
                 this.x += this.xSpeed;
                 this.y += this.ySpeed;
-                this._div.style.transform = "translate(" + this.x + "px, " + this.y + "px)";
+                this._div.style.transform = "translate(" + this.x + "px, " + this.y + "px) rotate(" + this.direction * 90 + "deg)";
             }
             else {
                 this.block.receive(this.direction);
                 this._div.remove();
                 this.active = false;
+                this.game.removeBullet(this);
             }
         }
     };
