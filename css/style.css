@@ -90,3 +90,13 @@ bar{
     -webkit-transition: width 0.5s; /* Safari */
     transition: width 0.5s;
 }
+
+gameover{
+    font-size: 60px;
+}
+
+restart{
+    background-color: gray;
+    width: 300px;
+    height: 100px;
+}

@@ -78,6 +78,9 @@ var Game = (function () {
                     this.energy = 200;
                 }
                 this.comboChain = 0;
+                if (this.energy <= 0) {
+                    this.gameOver();
+                }
             }
             else {
                 this.comboFlag++;
@@ -97,6 +100,22 @@ var Game = (function () {
         }
         this.scorebar.innerHTML = this.points.toString();
         requestAnimationFrame(function () { return _this.update(); });
+    };
+    Game.prototype.gameOver = function () {
+        var _this = this;
+        var playArea = document.getElementsByTagName("playarea")[0];
+        playArea.innerHTML = "";
+        this.blocks = [];
+        var gameOverScreen = document.createElement("gameover");
+        gameOverScreen.innerHTML = "GAME OVER";
+        playArea.appendChild(gameOverScreen);
+        var restartButton = document.createElement("restart");
+        restartButton.innerHTML = "Restart Game";
+        restartButton.addEventListener("click", function () { return _this.restart(); });
+        playArea.appendChild(restartButton);
+    };
+    Game.prototype.restart = function () {
+        console.log("restart the gameeemememememe");
     };
     Game.prototype.makeUnclickable = function () {
         this.clickable = false;

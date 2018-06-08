@@ -14,6 +14,7 @@ class Game {
     private energybar:HTMLElement
     private points = 0;
     private scorebar = document.getElementsByTagName("points")[0];
+    private gameOverState:boolean = false;
 
     public get maxWidth(): number {
 		return this._maxWidth;
@@ -73,6 +74,9 @@ class Game {
                     this.energy = 200;
                 }
                 this.comboChain = 0;
+                if(this.energy <= 0){ 
+                    this.gameOver();
+                }
             }
             else{
                 this.comboFlag ++;
@@ -93,6 +97,24 @@ class Game {
         this.scorebar.innerHTML = this.points.toString();
 
         requestAnimationFrame(() => this.update());
+    }
+
+    private gameOver(){
+        let playArea = document.getElementsByTagName("playarea")[0];
+        playArea.innerHTML = "";
+        this.blocks = [];
+        let gameOverScreen = document.createElement("gameover");
+        gameOverScreen.innerHTML = "GAME OVER"
+        playArea.appendChild(gameOverScreen);
+        let restartButton = document.createElement("restart");
+        restartButton.innerHTML = "Restart Game"
+        restartButton.addEventListener("click", () => this.restart());
+        playArea.appendChild(restartButton);
+        this.gameOverState = true;
+    }
+
+    private restart(){
+        console.log("restart the gameeemememememe");
     }
 
     public makeUnclickable(){
