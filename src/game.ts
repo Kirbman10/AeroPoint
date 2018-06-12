@@ -2,8 +2,11 @@
 
 class Game {
 
+    private controller:GameController;
+
     private blocks: Block[][];
     private bullets: Array<Bullet>;
+    private blockFX: Array<BlockEffect>;
     private _maxWidth = 9;
     private _maxHeight = 6;
     private clickable = true;
@@ -14,7 +17,6 @@ class Game {
     private energybar:HTMLElement
     private points = 0;
     private scorebar = document.getElementsByTagName("points")[0];
-    private gameOverState:boolean = false;
 
     public get maxWidth(): number {
 		return this._maxWidth;
@@ -26,7 +28,8 @@ class Game {
 		return this.clickable;
     }
 
-    constructor(){
+    constructor(controller: GameController){
+        this.controller = controller;
         this.blocks = [];
 
         for(let i = 0; i < this._maxWidth; i ++){
@@ -38,17 +41,16 @@ class Game {
         }
 
         this.bullets = [];
+        this.blockFX = [];
 
         console.log("I am working, don't worry!");
 
         let energyDiv = document.getElementsByTagName("energybar")[0];
         this.energybar = document.createElement("bar");
         energyDiv.appendChild(this.energybar);
-
-        this.update();
     }
 
-    private update(){
+    public update(){
         let numLanded = 0;
         for(let i = 0; i < this._maxWidth; i ++){
             for(let j = 0; j < this._maxHeight; j ++){
@@ -59,6 +61,9 @@ class Game {
             }
         }
         for(let b of this.bullets){
+            b.update();
+        }
+        for(let b of this.blockFX){
             b.update();
         }
         //console.log(this.clickable, numBullets);
@@ -95,26 +100,12 @@ class Game {
             }
         }
         this.scorebar.innerHTML = this.points.toString();
-
-        requestAnimationFrame(() => this.update());
     }
 
     private gameOver(){
         let playArea = document.getElementsByTagName("playarea")[0];
         playArea.innerHTML = "";
-        this.blocks = [];
-        let gameOverScreen = document.createElement("gameover");
-        gameOverScreen.innerHTML = "GAME OVER"
-        playArea.appendChild(gameOverScreen);
-        let restartButton = document.createElement("restart");
-        restartButton.innerHTML = "Restart Game"
-        restartButton.addEventListener("click", () => this.restart());
-        playArea.appendChild(restartButton);
-        this.gameOverState = true;
-    }
-
-    private restart(){
-        console.log("restart the gameeemememememe");
+        this.controller.gameOver();
     }
 
     public makeUnclickable(){
@@ -136,6 +127,16 @@ class Game {
     public removeBullet(b:Bullet){
         let i = this.bullets.indexOf(b);
         this.bullets.splice(i, 1);
+    }
+
+    public addBlockFX(b:BlockEffect){
+        this.blockFX.push(b);
+        console.log("effect has been adddeded");
+    }
+
+    public removeBlockFX(b:BlockEffect){
+        let i = this.blockFX.indexOf(b);
+        this.blockFX.splice(i, 1);
     }
 
     public getBlock(x:number, y:number): Block{
@@ -164,4 +165,3 @@ class Game {
         }
     }
 }
-window.addEventListener("load", () => new Game())

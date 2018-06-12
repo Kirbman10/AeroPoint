@@ -10,7 +10,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 var Game = (function () {
-    function Game() {
+    function Game(controller) {
         this._maxWidth = 9;
         this._maxHeight = 6;
         this.clickable = true;
@@ -19,6 +19,7 @@ var Game = (function () {
         this.energy = 200;
         this.points = 0;
         this.scorebar = document.getElementsByTagName("points")[0];
+        this.controller = controller;
         this.blocks = [];
         for (var i = 0; i < this._maxWidth; i++) {
             this.blocks[i] = [];
@@ -28,11 +29,11 @@ var Game = (function () {
             }
         }
         this.bullets = [];
+        this.blockFX = [];
         console.log("I am working, don't worry!");
         var energyDiv = document.getElementsByTagName("energybar")[0];
         this.energybar = document.createElement("bar");
         energyDiv.appendChild(this.energybar);
-        this.update();
     }
     Object.defineProperty(Game.prototype, "maxWidth", {
         get: function () {
@@ -52,7 +53,6 @@ var Game = (function () {
         return this.clickable;
     };
     Game.prototype.update = function () {
-        var _this = this;
         var numLanded = 0;
         for (var i = 0; i < this._maxWidth; i++) {
             for (var j = 0; j < this._maxHeight; j++) {
@@ -64,6 +64,10 @@ var Game = (function () {
         }
         for (var _i = 0, _a = this.bullets; _i < _a.length; _i++) {
             var b = _a[_i];
+            b.update();
+        }
+        for (var _b = 0, _c = this.blockFX; _b < _c.length; _b++) {
+            var b = _c[_b];
             b.update();
         }
         if (!this.clickable && this.bullets.length == 0 && numLanded == 0) {
@@ -99,23 +103,11 @@ var Game = (function () {
             }
         }
         this.scorebar.innerHTML = this.points.toString();
-        requestAnimationFrame(function () { return _this.update(); });
     };
     Game.prototype.gameOver = function () {
-        var _this = this;
         var playArea = document.getElementsByTagName("playarea")[0];
         playArea.innerHTML = "";
-        this.blocks = [];
-        var gameOverScreen = document.createElement("gameover");
-        gameOverScreen.innerHTML = "GAME OVER";
-        playArea.appendChild(gameOverScreen);
-        var restartButton = document.createElement("restart");
-        restartButton.innerHTML = "Restart Game";
-        restartButton.addEventListener("click", function () { return _this.restart(); });
-        playArea.appendChild(restartButton);
-    };
-    Game.prototype.restart = function () {
-        console.log("restart the gameeemememememe");
+        this.controller.gameOver();
     };
     Game.prototype.makeUnclickable = function () {
         this.clickable = false;
@@ -132,6 +124,14 @@ var Game = (function () {
     Game.prototype.removeBullet = function (b) {
         var i = this.bullets.indexOf(b);
         this.bullets.splice(i, 1);
+    };
+    Game.prototype.addBlockFX = function (b) {
+        this.blockFX.push(b);
+        console.log("effect has been adddeded");
+    };
+    Game.prototype.removeBlockFX = function (b) {
+        var i = this.blockFX.indexOf(b);
+        this.blockFX.splice(i, 1);
     };
     Game.prototype.getBlock = function (x, y) {
         return this.blocks[x][y];
@@ -159,7 +159,6 @@ var Game = (function () {
     };
     return Game;
 }());
-window.addEventListener("load", function () { return new Game(); });
 var Block = (function () {
     function Block(g, xPos, yPos) {
         var _this = this;
@@ -277,6 +276,8 @@ var Block = (function () {
         requestAnimationFrame(function () { return _this.update(); });
     };
     Block.prototype.destroy = function () {
+        var blockFX = new BlockEffect(this.game, this._x, this._y);
+        this.game.addBlockFX(blockFX);
         this._div.remove();
         console.log("ouchies!");
     };
@@ -352,6 +353,34 @@ var Arrow = (function (_super) {
     };
     return Arrow;
 }(Point));
+var BlockEffect = (function () {
+    function BlockEffect(g, x, y) {
+        this.counter = 0;
+        this.game = g;
+        this.x = x;
+        this.y = y;
+        this.div = document.createElement("blockeffect");
+        var playArea = document.getElementsByTagName("playarea")[0];
+        playArea.appendChild(this.div);
+        this.div.style.transform = "translate(" + this.x + "px, " + this.y + "px)";
+    }
+    BlockEffect.prototype.update = function () {
+        if (this.counter <= 10) {
+            this.div.style.opacity = (1 - this.counter * 0.1).toString();
+            this.div.style.width = 90 + this.counter + "px";
+            this.div.style.height = 90 + this.counter + "px";
+            this.x -= 0.5;
+            this.y -= 0.5;
+            this.div.style.transform = "rotate(" + this.counter + ") translate(" + this.x + "px, " + this.y + "px)";
+            this.counter++;
+        }
+        else {
+            this.div.remove();
+            this.game.removeBlockFX(this);
+        }
+    };
+    return BlockEffect;
+}());
 var Bullet = (function () {
     function Bullet(g, dir, x, y, block, xSpeed, ySpeed) {
         this.distance = 0;
@@ -395,6 +424,50 @@ var EmptyPoint = (function (_super) {
     }
     return EmptyPoint;
 }(Point));
+var GameController = (function () {
+    function GameController() {
+        this.screen = new StartScreen(this);
+        this.gameLoop();
+    }
+    GameController.prototype.gameLoop = function () {
+        var _this = this;
+        this.screen.update();
+        requestAnimationFrame(function () { return _this.gameLoop(); });
+    };
+    GameController.prototype.showPlayScreen = function () {
+        this.screen = new Game(this);
+    };
+    GameController.prototype.gameOver = function () {
+        this.screen = new GameOverScreen(this);
+    };
+    return GameController;
+}());
+window.addEventListener("load", function () { return new GameController(); });
+var GameOverScreen = (function () {
+    function GameOverScreen(controller) {
+        var _this = this;
+        this.controller = controller;
+        var playArea = document.getElementsByTagName("playarea")[0];
+        this.div = document.createElement("startbutton");
+        this.div.innerHTML = "Restart";
+        playArea.appendChild(this.div);
+        this.div.addEventListener("click", function () { return _this.startGame(); });
+        var gameOver = document.createElement("gameover");
+        gameOver.innerHTML = "GAME OVER";
+        playArea.appendChild(gameOver);
+        var gameOverText = document.createElement("gameovertext");
+        gameOverText.innerHTML = "You ran out of energy.";
+        playArea.appendChild(gameOverText);
+    }
+    GameOverScreen.prototype.update = function () {
+    };
+    GameOverScreen.prototype.startGame = function () {
+        var playArea = document.getElementsByTagName("playarea")[0];
+        playArea.innerHTML = "";
+        this.controller.showPlayScreen();
+    };
+    return GameOverScreen;
+}());
 var Receiver = (function (_super) {
     __extends(Receiver, _super);
     function Receiver(g, block, dir) {
@@ -407,4 +480,22 @@ var Receiver = (function (_super) {
     };
     return Receiver;
 }(Point));
+var StartScreen = (function () {
+    function StartScreen(controller) {
+        var _this = this;
+        this.controller = controller;
+        this.div = document.createElement("startbutton");
+        this.div.innerHTML = "Start Game";
+        var playArea = document.getElementsByTagName("playarea")[0];
+        playArea.appendChild(this.div);
+        this.div.addEventListener("click", function () { return _this.startGame(); });
+    }
+    StartScreen.prototype.update = function () {
+    };
+    StartScreen.prototype.startGame = function () {
+        this.div.remove();
+        this.controller.showPlayScreen();
+    };
+    return StartScreen;
+}());
 //# sourceMappingURL=game.js.map

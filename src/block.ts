@@ -122,6 +122,9 @@ class Block{
     }
 
     public destroy(){
+        //let rect:ClientRect = this._div.getBoundingClientRect();
+        let blockFX = new BlockEffect(this.game, this._x, this._y);
+        this.game.addBlockFX(blockFX);
         this._div.remove();
         console.log("ouchies!")
     }
