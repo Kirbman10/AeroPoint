@@ -4,6 +4,10 @@ class Game {
 
     private controller:GameController;
 
+    private destroySnd:Howl;
+    private shootSnd:Howl;
+    private comboSnd: Array<Howl>;
+
     private blocks: Block[][];
     private bullets: Array<Bullet>;
     private blockFX: Array<BlockEffect>;
@@ -31,6 +35,22 @@ class Game {
     constructor(controller: GameController){
         this.controller = controller;
         this.blocks = [];
+        this.comboSnd = [];
+
+        this.destroySnd = new Howl({
+            src: ['assets/sounds/Destroy.wav']
+        });
+        this.shootSnd = new Howl({
+            src: ['assets/sounds/Shoot.wav']
+        });
+        for(let i = 1; i <= 5; i++){
+            let path = 'assets/sounds/Combo'+i+'.wav'
+            this.comboSnd.push(
+                new Howl({
+                    src: [path]
+                })
+            );
+        }
 
         for(let i = 0; i < this._maxWidth; i ++){
             this.blocks[i] = [];
@@ -102,6 +122,16 @@ class Game {
         this.scorebar.innerHTML = this.points.toString();
     }
 
+    private playComboSnd(){
+        if(this.comboChain < 5){
+            this.comboSnd[this.comboChain - 1].play();
+        }
+        else{
+            this.comboSnd[4].stop();
+            this.comboSnd[4].play();
+        }
+    }
+
     private gameOver(){
         let playArea = document.getElementsByTagName("playarea")[0];
         playArea.innerHTML = "";
@@ -118,10 +148,13 @@ class Game {
 
     public combo(){
         this.comboChain ++;
+        this.playComboSnd();
     }
 
     public addBullets(b:Bullet){
         this.bullets.push(b);
+        this.shootSnd.stop();
+        this.shootSnd.play();
     }
 
     public removeBullet(b:Bullet){
@@ -145,6 +178,7 @@ class Game {
 
     public shiftBlocks(){
         console.log("preparing shift");
+        this.destroySnd.play();
         for(let i = 0; i < this._maxWidth; i ++){
             let numShifts = 0;
             for(let j = 0; j < this._maxHeight; j ++){

@@ -28,6 +28,7 @@ class BlockEffect{
             this.x -= 0.5;
             this.y -= 0.5;
             this.div.style.transform = "translate("+this.x+"px, "+this.y+"px)";
+            this.div.style.filter = "blur("+this.counter+"px)";
             this.counter ++;
         }
         else{

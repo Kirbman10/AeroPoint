@@ -21,6 +21,19 @@ var Game = (function () {
         this.scorebar = document.getElementsByTagName("points")[0];
         this.controller = controller;
         this.blocks = [];
+        this.comboSnd = [];
+        this.destroySnd = new Howl({
+            src: ['assets/sounds/Destroy.wav']
+        });
+        this.shootSnd = new Howl({
+            src: ['assets/sounds/Shoot.wav']
+        });
+        for (var i = 1; i <= 5; i++) {
+            var path = 'assets/sounds/Combo' + i + '.wav';
+            this.comboSnd.push(new Howl({
+                src: [path]
+            }));
+        }
         for (var i = 0; i < this._maxWidth; i++) {
             this.blocks[i] = [];
             for (var j = 0; j < this._maxHeight; j++) {
@@ -104,6 +117,15 @@ var Game = (function () {
         }
         this.scorebar.innerHTML = this.points.toString();
     };
+    Game.prototype.playComboSnd = function () {
+        if (this.comboChain < 5) {
+            this.comboSnd[this.comboChain - 1].play();
+        }
+        else {
+            this.comboSnd[4].stop();
+            this.comboSnd[4].play();
+        }
+    };
     Game.prototype.gameOver = function () {
         var playArea = document.getElementsByTagName("playarea")[0];
         playArea.innerHTML = "";
@@ -117,9 +139,12 @@ var Game = (function () {
     };
     Game.prototype.combo = function () {
         this.comboChain++;
+        this.playComboSnd();
     };
     Game.prototype.addBullets = function (b) {
         this.bullets.push(b);
+        this.shootSnd.stop();
+        this.shootSnd.play();
     };
     Game.prototype.removeBullet = function (b) {
         var i = this.bullets.indexOf(b);
@@ -138,6 +163,7 @@ var Game = (function () {
     };
     Game.prototype.shiftBlocks = function () {
         console.log("preparing shift");
+        this.destroySnd.play();
         for (var i = 0; i < this._maxWidth; i++) {
             var numShifts = 0;
             for (var j = 0; j < this._maxHeight; j++) {
@@ -175,6 +201,9 @@ var Block = (function () {
         this._y = this.yPos * 100;
         this._div.style.transform = "translate(" + this._x + "px, " + this._y + "px)";
         this._div.style.backgroundColor = "gray";
+        this.landSnd = new Howl({
+            src: ['assets/sounds/Land.wav']
+        });
         var empties = 0;
         var noArrows = 0;
         for (var i = 0; i < 4; i++) {
@@ -239,6 +268,8 @@ var Block = (function () {
             else {
                 this._y = yValue;
                 this.landed = true;
+                this.landSnd.stop();
+                this.landSnd.play();
             }
         }
         this._div.style.transform = "translate(" + this._x + "px, " + this._y + "px)";
@@ -291,6 +322,9 @@ var Point = (function () {
         this._div = document.createElement(type);
         this.block.div.appendChild(this._div);
         this._div.style.transform = "rotate(" + this.direction * 90 + "deg)";
+        this.clinkSnd = new Howl({
+            src: ['assets/sounds/Clink.wav']
+        });
     }
     Object.defineProperty(Point.prototype, "div", {
         get: function () {
@@ -303,6 +337,8 @@ var Point = (function () {
     };
     Point.prototype.receive = function () {
         console.log("arrow aborted");
+        this.clinkSnd.stop();
+        this.clinkSnd.play();
     };
     return Point;
 }());
@@ -371,7 +407,8 @@ var BlockEffect = (function () {
             this.div.style.height = 90 + this.counter + "px";
             this.x -= 0.5;
             this.y -= 0.5;
-            this.div.style.transform = "rotate(" + this.counter + ") translate(" + this.x + "px, " + this.y + "px)";
+            this.div.style.transform = "translate(" + this.x + "px, " + this.y + "px)";
+            this.div.style.filter = "blur(" + this.counter + "px)";
             this.counter++;
         }
         else {

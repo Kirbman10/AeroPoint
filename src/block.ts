@@ -9,6 +9,8 @@ class Block{
     private active:boolean = false
     private landed:boolean = true
 
+    private landSnd:Howl;
+
     private arrows:Array<Point>;
 
     public get div(): HTMLElement {
@@ -43,8 +45,11 @@ class Block{
         this._x = this.xPos * 100;
         this._y = this.yPos * 100;
         this._div.style.transform = "translate("+this._x+"px, "+this._y+"px)";
-
         this._div.style.backgroundColor = "gray";
+
+        this.landSnd = new Howl({
+            src: ['assets/sounds/Land.wav']
+        });
 
         let empties = 0;
         let noArrows = 0;
@@ -85,6 +90,8 @@ class Block{
             else{
                 this._y = yValue;
                 this.landed = true;
+                this.landSnd.stop();
+                this.landSnd.play();
             }
         }
         this._div.style.transform = "translate("+this._x+"px, "+this._y+"px)";
