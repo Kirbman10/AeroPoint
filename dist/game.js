@@ -28,6 +28,12 @@ var Game = (function () {
         this.shootSnd = new Howl({
             src: ['assets/sounds/Shoot.wav']
         });
+        this.landSnd = new Howl({
+            src: ['assets/sounds/Land.wav']
+        });
+        this.clinkSnd = new Howl({
+            src: ['assets/sounds/Clink.wav']
+        });
         for (var i = 1; i <= 5; i++) {
             var path = 'assets/sounds/Combo' + i + '.wav';
             this.comboSnd.push(new Howl({
@@ -126,6 +132,16 @@ var Game = (function () {
             this.comboSnd[4].play();
         }
     };
+    Game.prototype.playSnd = function (n) {
+        if (n == 0) {
+            this.landSnd.stop();
+            this.landSnd.play();
+        }
+        else if (n == 1) {
+            this.clinkSnd.stop();
+            this.clinkSnd.play();
+        }
+    };
     Game.prototype.gameOver = function () {
         var playArea = document.getElementsByTagName("playarea")[0];
         playArea.innerHTML = "";
@@ -201,9 +217,6 @@ var Block = (function () {
         this._y = this.yPos * 100;
         this._div.style.transform = "translate(" + this._x + "px, " + this._y + "px)";
         this._div.style.backgroundColor = "gray";
-        this.landSnd = new Howl({
-            src: ['assets/sounds/Land.wav']
-        });
         var empties = 0;
         var noArrows = 0;
         for (var i = 0; i < 4; i++) {
@@ -268,8 +281,7 @@ var Block = (function () {
             else {
                 this._y = yValue;
                 this.landed = true;
-                this.landSnd.stop();
-                this.landSnd.play();
+                this.game.playSnd(0);
             }
         }
         this._div.style.transform = "translate(" + this._x + "px, " + this._y + "px)";
@@ -322,9 +334,6 @@ var Point = (function () {
         this._div = document.createElement(type);
         this.block.div.appendChild(this._div);
         this._div.style.transform = "rotate(" + this.direction * 90 + "deg)";
-        this.clinkSnd = new Howl({
-            src: ['assets/sounds/Clink.wav']
-        });
     }
     Object.defineProperty(Point.prototype, "div", {
         get: function () {
@@ -337,8 +346,7 @@ var Point = (function () {
     };
     Point.prototype.receive = function () {
         console.log("arrow aborted");
-        this.clinkSnd.stop();
-        this.clinkSnd.play();
+        this.game.playSnd(1);
     };
     return Point;
 }());
@@ -526,11 +534,15 @@ var StartScreen = (function () {
         var playArea = document.getElementsByTagName("playarea")[0];
         playArea.appendChild(this.div);
         this.div.addEventListener("click", function () { return _this.startGame(); });
+        this.logo = document.createElement("logo");
+        this.logo.innerHTML = "<img src='assets/Aeropoint.png'>";
+        playArea.appendChild(this.logo);
     }
     StartScreen.prototype.update = function () {
     };
     StartScreen.prototype.startGame = function () {
         this.div.remove();
+        this.logo.remove();
         this.controller.showPlayScreen();
     };
     return StartScreen;

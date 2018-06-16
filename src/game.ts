@@ -6,7 +6,9 @@ class Game {
 
     private destroySnd:Howl;
     private shootSnd:Howl;
+    private landSnd:Howl;
     private comboSnd: Array<Howl>;
+    protected clinkSnd:Howl
 
     private blocks: Block[][];
     private bullets: Array<Bullet>;
@@ -42,6 +44,12 @@ class Game {
         });
         this.shootSnd = new Howl({
             src: ['assets/sounds/Shoot.wav']
+        });
+        this.landSnd = new Howl({
+            src: ['assets/sounds/Land.wav']
+        });
+        this.clinkSnd = new Howl({
+            src: ['assets/sounds/Clink.wav']
         });
         for(let i = 1; i <= 5; i++){
             let path = 'assets/sounds/Combo'+i+'.wav'
@@ -129,6 +137,17 @@ class Game {
         else{
             this.comboSnd[4].stop();
             this.comboSnd[4].play();
+        }
+    }
+
+    public playSnd(n:number){
+        if(n == 0){
+            this.landSnd.stop();
+            this.landSnd.play();
+        }
+        else if(n == 1){
+            this.clinkSnd.stop();
+            this.clinkSnd.play();
         }
     }
 

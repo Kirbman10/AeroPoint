@@ -112,6 +112,12 @@ gameovertext{
     top: 300px;
 }
 
+logo{
+    text-align: center;
+    top: 150px;
+    left: 167px;
+}
+
 startbutton{
     text-align: center;
     background-color: green;
