@@ -39,6 +39,14 @@ class Game {
         this.blocks = [];
         this.comboSnd = [];
 
+        for(let i = 0; i < this._maxWidth; i ++){
+            this.blocks[i] = [];
+            for(let j = 0; j < this._maxHeight; j ++){
+                this.blocks[i][j] = new Block(this, i, j);
+                console.log(i, j);
+            }
+        }
+
         this.destroySnd = new Howl({
             src: ['assets/sounds/Destroy.wav']
         });
@@ -58,14 +66,6 @@ class Game {
                     src: [path]
                 })
             );
-        }
-
-        for(let i = 0; i < this._maxWidth; i ++){
-            this.blocks[i] = [];
-            for(let j = 0; j < this._maxHeight; j ++){
-                this.blocks[i][j] = new Block(this, i, j);
-                console.log(i, j);
-            }
         }
 
         this.bullets = [];

@@ -22,6 +22,13 @@ var Game = (function () {
         this.controller = controller;
         this.blocks = [];
         this.comboSnd = [];
+        for (var i = 0; i < this._maxWidth; i++) {
+            this.blocks[i] = [];
+            for (var j = 0; j < this._maxHeight; j++) {
+                this.blocks[i][j] = new Block(this, i, j);
+                console.log(i, j);
+            }
+        }
         this.destroySnd = new Howl({
             src: ['assets/sounds/Destroy.wav']
         });
@@ -39,13 +46,6 @@ var Game = (function () {
             this.comboSnd.push(new Howl({
                 src: [path]
             }));
-        }
-        for (var i = 0; i < this._maxWidth; i++) {
-            this.blocks[i] = [];
-            for (var j = 0; j < this._maxHeight; j++) {
-                this.blocks[i][j] = new Block(this, i, j);
-                console.log(i, j);
-            }
         }
         this.bullets = [];
         this.blockFX = [];
